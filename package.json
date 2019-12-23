@@ -7,7 +7,7 @@
   "license": "MIT",
   "gypfile": true,
   "scripts": {
-    "install": "node-gyp rebuild",
+    "install": "node-gyp rebuild && tsc",
     "prepublish": "tsc",
     "build": "tsc"
   },
