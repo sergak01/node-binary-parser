@@ -1,0 +1,18 @@
+{
+  "name": "binary-parser",
+  "description": "Parsing binary data by rules",
+  "version": "0.0.1",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "license": "MIT",
+  "gypfile": true,
+  "scripts": {
+    "install": "node-gyp rebuild",
+    "prepublish": "tsc",
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@types/node": "^12.12.21",
+    "typescript": "^3.7.4"
+  }
+}
