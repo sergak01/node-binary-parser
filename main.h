@@ -76,7 +76,6 @@ private:
 public:
     static void
     Init(v8::Local<v8::Object> exports);
-    static std::vector<char> HexToBytes(const std::string &hex);
 };
 
 #endif

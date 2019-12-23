@@ -24,11 +24,11 @@ void BinaryParser::Init(Local<Object> exports)
     // Prototype
     NODE_SET_PROTOTYPE_METHOD(tpl, "parse", Parse);
     NODE_SET_PROTOTYPE_METHOD(tpl, "parseBits", ParseBits);
-    // NODE_SET_PROTOTYPE_METHOD(tpl, "parseASCII", ParseASCII);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "parseASCII", ParseASCII);
     // NODE_SET_PROTOTYPE_METHOD(tpl, "parseUTF8", ParseUTF8);
-    // NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt", ParseInt);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt", ParseInt);
     // NODE_SET_PROTOTYPE_METHOD(tpl, "parseFloat", ParseFloat);
-    // NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt", ParseUInt);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt", ParseUInt);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "bitsBack", BitsBack);
     NODE_SET_PROTOTYPE_METHOD(tpl, "bitsSkip", BitsSkip);
@@ -163,6 +163,64 @@ void BinaryParser::ParseBits(const FunctionCallbackInfo<Value> &args)
     args.GetReturnValue().Set(args.This());
 }
 
+void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args)
+{
+    Isolate *isolate = args.GetIsolate();
+    Local<Context> context = isolate->GetCurrentContext();
+
+    BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+
+    String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+
+    ValueParser parser;
+    parser.type = "int";
+    parser.name = *name;
+    parser.bitsCount = sizeof(int) * 8;
+
+    obj->parser_.push_back(parser);
+
+    args.GetReturnValue().Set(args.This());
+}
+
+void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value> &args)
+{
+    Isolate *isolate = args.GetIsolate();
+    Local<Context> context = isolate->GetCurrentContext();
+
+    BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+
+    String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+
+    ValueParser parser;
+    parser.type = "uint";
+    parser.name = *name;
+    parser.bitsCount = sizeof(unsigned int) * 8;
+
+    obj->parser_.push_back(parser);
+
+    args.GetReturnValue().Set(args.This());
+}
+
+void BinaryParser::ParseASCII(const FunctionCallbackInfo<Value> &args)
+{
+    Isolate *isolate = args.GetIsolate();
+    Local<Context> context = isolate->GetCurrentContext();
+
+    BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+
+    String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+    int bitsCount = args[1]->NumberValue(context).ToChecked();
+
+    ValueParser parser;
+    parser.type = "ascii";
+    parser.name = *name;
+    parser.bitsCount = sizeof(unsigned char) * 8 * bitsCount;
+
+    obj->parser_.push_back(parser);
+
+    args.GetReturnValue().Set(args.This());
+}
+
 void BinaryParser::BitsBack(const FunctionCallbackInfo<Value> &args)
 {
     Isolate *isolate = args.GetIsolate();
@@ -170,7 +228,7 @@ void BinaryParser::BitsBack(const FunctionCallbackInfo<Value> &args)
 
     BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
 
-    int bitsCount = args[1]->NumberValue(context).ToChecked();
+    int bitsCount = args[0]->NumberValue(context).ToChecked();
 
     ValueParser parser;
 
@@ -189,7 +247,7 @@ void BinaryParser::BitsSkip(const FunctionCallbackInfo<Value> &args)
 
     BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
 
-    int bitsCount = args[1]->NumberValue(context).ToChecked();
+    int bitsCount = args[0]->NumberValue(context).ToChecked();
 
     ValueParser parser;
 
@@ -227,41 +285,17 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
     std::vector<char> bytes;
     bytes.insert(bytes.cbegin(), data, data + len);
 
-    // const std::size_t bytesSize = bytes.size();
-
-    // std::cout << bytesSize << std::endl;
-
     std::vector<bool> bitset;
 
     for (auto i = bytes.cbegin(); i != bytes.cend(); i++)
     {
         std::bitset<8> b(*i);
 
-        // std::cout << b.to_string() << ' ';
-
         for (auto j = 0; j < 8; j++)
         {
             bitset.push_back(b[7 - j]);
         }
     }
-
-    // std::cout << std::endl;
-
-    // std::size_t space = 0;
-    // for (auto i = bitset.cbegin(); i != bitset.cend(); i++)
-    // {
-    //     std::cout << std::bitset<1>(*i).to_string();
-    //     ++space;
-
-    //     if (space == 8)
-    //     {
-    //         space = 0;
-
-    //         std::cout << ' ';
-    //     }
-    // }
-
-    // std::cout << std::endl;
 
     uint from = 0;
 
@@ -271,19 +305,19 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
     {
         std::string parserType = (*parser).type;
 
+        if (bitset.size() < from + (*parser).bitsCount)
+        {
+            isolate->ThrowException(Exception::TypeError(
+                String::NewFromUtf8(isolate,
+                                    "Out of range",
+                                    NewStringType::kNormal)
+                    .ToLocalChecked()));
+
+            return;
+        }
+
         if (parserType == "bit")
         {
-            if (bitset.size() < from + (*parser).bitsCount)
-            {
-                isolate->ThrowException(Exception::TypeError(
-                    String::NewFromUtf8(isolate,
-                                        "Out of range",
-                                        NewStringType::kNormal)
-                        .ToLocalChecked()));
-
-                return;
-            }
-
             std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
 
             if ((*parser).reOrder.size())
@@ -304,6 +338,43 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
             unsigned long parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
 
             toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+
+            from += (unsigned long)(*parser).bitsCount;
+        }
+        else if (parserType == "int")
+        {
+            std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+            int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+
+            from += (unsigned long)(*parser).bitsCount;
+        }
+        else if (parserType == "uint")
+        {
+            std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+            unsigned int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+
+            from += (unsigned long)(*parser).bitsCount;
+        }
+        else if (parserType == "ascii")
+        {
+            std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+            std::string ascii = "";
+
+            for (auto bIter = b.cbegin(); bIter != b.cend(); bIter += 8)
+            {
+                std::vector<bool> charBitset(bIter, bIter + 8);
+
+                ascii.push_back((unsigned char)std::accumulate(charBitset.cbegin(), charBitset.cend(), 0, [](int x, int y) { return (x << 1) + y; }));
+            }
+
+            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), String::NewFromUtf8(isolate, ascii.c_str()));
 
             from += (unsigned long)(*parser).bitsCount;
         }
