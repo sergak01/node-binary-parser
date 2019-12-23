@@ -15,3 +15,9 @@ export interface BinaryParser {
   bitsBack(count: number): BinaryParser;
   bitsSkip(count: number): BinaryParser;
 }
+
+const binaryParser = require("../build/Release/BinaryParser");
+
+export var BinaryParser: {
+  new (): BinaryParser;
+} = binaryParser.BinaryParser;
