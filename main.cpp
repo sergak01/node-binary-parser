@@ -237,7 +237,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
     {
         std::bitset<8> b(*i);
 
-        std::cout << b.to_string() << ' ';
+        // std::cout << b.to_string() << ' ';
 
         for (auto j = 0; j < 8; j++)
         {
@@ -273,6 +273,17 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
 
         if (parserType == "bit")
         {
+            if (bitset.size() < from + (*parser).bitsCount)
+            {
+                isolate->ThrowException(Exception::TypeError(
+                    String::NewFromUtf8(isolate,
+                                        "Out of range",
+                                        NewStringType::kNormal)
+                        .ToLocalChecked()));
+
+                return;
+            }
+
             std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
 
             if ((*parser).reOrder.size())
