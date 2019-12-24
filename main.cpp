@@ -27,7 +27,7 @@ void BinaryParser::Init(Local<Object> exports)
     NODE_SET_PROTOTYPE_METHOD(tpl, "parseASCII", ParseASCII);
     // NODE_SET_PROTOTYPE_METHOD(tpl, "parseUTF8", ParseUTF8);
     NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt", ParseInt);
-    // NODE_SET_PROTOTYPE_METHOD(tpl, "parseFloat", ParseFloat);
+    NODE_SET_PROTOTYPE_METHOD(tpl, "parseFloat", ParseFloat);
     NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt", ParseUInt);
 
     NODE_SET_PROTOTYPE_METHOD(tpl, "bitsBack", BitsBack);
@@ -176,6 +176,25 @@ void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args)
     parser.type = "int";
     parser.name = *name;
     parser.bitsCount = sizeof(int) * 8;
+
+    obj->parser_.push_back(parser);
+
+    args.GetReturnValue().Set(args.This());
+}
+
+void BinaryParser::ParseFloat(const FunctionCallbackInfo<Value> &args)
+{
+    Isolate *isolate = args.GetIsolate();
+    Local<Context> context = isolate->GetCurrentContext();
+
+    BinaryParser *obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+
+    String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+
+    ValueParser parser;
+    parser.type = "float";
+    parser.name = *name;
+    parser.bitsCount = sizeof(float) * 8;
 
     obj->parser_.push_back(parser);
 
@@ -346,6 +365,17 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
             std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
 
             int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+
+            from += (unsigned long)(*parser).bitsCount;
+        }
+        else if (parserType == "float")
+        {
+            std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+            int parsedInt = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+            float parsed = *(float *)&parsedInt;
 
             toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
 

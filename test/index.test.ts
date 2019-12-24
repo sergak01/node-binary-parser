@@ -171,6 +171,48 @@ describe("BinaryParser", () => {
     });
   });
 
+  describe("parseFloat", () => {
+    let parser: BinaryParser;
+
+    beforeEach(async () => {
+      parser = new BinaryParser();
+
+      parser.parseFloat("test");
+    });
+
+    it("to equal 1", async done => {
+      const data = Buffer.from("3f800000", "hex");
+
+      expect(parser.parse(data)).toMatchObject({ test: 1 });
+
+      done();
+    });
+
+    it("to equal -1", async done => {
+      const data = Buffer.from("bf800000", "hex");
+
+      expect(parser.parse(data)).toMatchObject({ test: -1 });
+
+      done();
+    });
+
+    it("to equal 14.5", async done => {
+      const data = Buffer.from("41680000", "hex");
+
+      expect(parser.parse(data)).toMatchObject({ test: 14.5 });
+
+      done();
+    });
+
+    it("to equal 934.0040283203125", async done => {
+      const data = Buffer.from("44698042", "hex");
+
+      expect(parser.parse(data)).toMatchObject({ test: 934.0040283203125 });
+
+      done();
+    });
+  });
+
   describe("parseUInt", () => {
     let parser: BinaryParser;
 

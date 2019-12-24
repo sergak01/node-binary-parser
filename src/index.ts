@@ -11,6 +11,7 @@ export interface BitsOptions {
 export interface BinaryParser {
   parseBits(name: string, count: number, options?: BitsOptions): BinaryParser;
   parseInt(name: string): BinaryParser;
+  parseFloat(name: string): BinaryParser;
   parseUInt(name: string): BinaryParser;
   parseASCII(name: string, length: number): BinaryParser;
   parse(value: Buffer): { [key: string]: any };
