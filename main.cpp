@@ -79,9 +79,9 @@ void BinaryParser::ParseBits(const FunctionCallbackInfo<Value> &args)
     parser.name = *name;
     parser.bitsCount = bitsCount;
 
-    if (options->HasOwnProperty(context, String::NewFromUtf8(isolate, "reOrder", String::kNormalString)).ToChecked())
+    if (options->HasOwnProperty(context, Local<Name>::Cast(String::NewFromUtf8(isolate, "reOrder", NewStringType::kNormal).ToLocalChecked())).ToChecked())
     {
-        Local<Value> reOrderOption = options->Get(context, String::NewFromUtf8(isolate, "reOrder", String::kNormalString)).ToLocalChecked();
+        Local<Value> reOrderOption = options->Get(context, Local<Name>::Cast(String::NewFromUtf8(isolate, "reOrder", NewStringType::kNormal).ToLocalChecked())).ToLocalChecked();
 
         if (!reOrderOption->IsArray())
         {
@@ -94,7 +94,7 @@ void BinaryParser::ParseBits(const FunctionCallbackInfo<Value> &args)
             return;
         }
 
-        Local<Array> reOrder = Handle<Array>::Cast(reOrderOption);
+        Local<Array> reOrder = Local<Array>::Cast(reOrderOption);
 
         for (size_t reOrderIndex = 0; reOrderIndex < reOrder->Length(); reOrderIndex++)
         {
@@ -102,13 +102,13 @@ void BinaryParser::ParseBits(const FunctionCallbackInfo<Value> &args)
 
             if (order->IsObject())
             {
-                Local<Object> orderObject = Handle<Object>::Cast(order);
+                Local<Object> orderObject = Local<Array>::Cast(order);
 
                 BytesOrder bO;
 
-                Local<Value> startPos = orderObject->Get(context, String::NewFromUtf8(isolate, "startPos", String::kNormalString)).ToLocalChecked();
-                Local<Value> count = orderObject->Get(context, String::NewFromUtf8(isolate, "count", String::kNormalString)).ToLocalChecked();
-                Local<Value> newPos = orderObject->Get(context, String::NewFromUtf8(isolate, "newPos", String::kNormalString)).ToLocalChecked();
+                Local<Value> startPos = orderObject->Get(context, Local<Name>::Cast(String::NewFromUtf8(isolate, "startPos", NewStringType::kNormal).ToLocalChecked())).ToLocalChecked();
+                Local<Value> count = orderObject->Get(context, Local<Name>::Cast(String::NewFromUtf8(isolate, "count", NewStringType::kNormal).ToLocalChecked())).ToLocalChecked();
+                Local<Value> newPos = orderObject->Get(context, Local<Name>::Cast(String::NewFromUtf8(isolate, "newPos", NewStringType::kNormal).ToLocalChecked())).ToLocalChecked();
 
                 if (!startPos->IsNumber())
                 {
@@ -318,7 +318,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
 
     uint from = 0;
 
-    Handle<Object> toReturn = Object::New(isolate);
+    Local<Object> toReturn = Object::New(isolate);
 
     for (auto parser = obj->parser_.cbegin(); parser != obj->parser_.cend(); parser++)
     {
@@ -356,7 +356,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
 
             unsigned long parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
 
-            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+            toReturn->Set(context, Local<Name>::Cast(String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()), Number::New(isolate, parsed));
 
             from += (unsigned long)(*parser).bitsCount;
         }
@@ -366,7 +366,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
 
             int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
 
-            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+            toReturn->Set(context, Local<Name>::Cast(String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()), Number::New(isolate, parsed));
 
             from += (unsigned long)(*parser).bitsCount;
         }
@@ -377,7 +377,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
             int parsedInt = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
             float parsed = *(float *)&parsedInt;
 
-            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+            toReturn->Set(context, Local<Name>::Cast(String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()), Number::New(isolate, parsed));
 
             from += (unsigned long)(*parser).bitsCount;
         }
@@ -387,7 +387,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
 
             unsigned int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
 
-            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), Number::New(isolate, parsed));
+            toReturn->Set(context, Local<Name>::Cast(String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()), Number::New(isolate, parsed));
 
             from += (unsigned long)(*parser).bitsCount;
         }
@@ -404,7 +404,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args)
                 ascii.push_back((unsigned char)std::accumulate(charBitset.cbegin(), charBitset.cend(), 0, [](int x, int y) { return (x << 1) + y; }));
             }
 
-            toReturn->Set(String::NewFromUtf8(isolate, (*parser).name.c_str()), String::NewFromUtf8(isolate, ascii.c_str()));
+            toReturn->Set(context, Local<Name>::Cast(String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()), String::NewFromUtf8(isolate, ascii.c_str(), NewStringType::kNormal).ToLocalChecked());
 
             from += (unsigned long)(*parser).bitsCount;
         }
@@ -433,8 +433,3 @@ void InitAll(Local<Object> exports)
 }
 
 NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
-
-int main()
-{
-    return 0;
-}
