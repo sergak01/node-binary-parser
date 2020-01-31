@@ -1,7 +1,7 @@
 {
   "name": "binary-parser",
   "description": "Parsing binary data by rules",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
@@ -14,11 +14,13 @@
   },
   "dependencies": {
     "@types/node": "^12.12.21",
-    "jest": "^24.9.0",
-    "typescript": "^3.7.4"
+    "jest": "^24.9.0"
   },
   "devDependencies": {
     "@types/jest": "^24.0.24",
-    "ts-jest": "^24.2.0"
+    "ts-jest": "^24.2.0",
+    "node-gyp": "^6.1.0",
+    "typescript": "^3.7.4",
+    "tsc": "^1.20150623.0"
   }
 }
