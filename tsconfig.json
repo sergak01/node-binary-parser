@@ -7,7 +7,8 @@
     "outDir": "dist",
     "strict": true,
     "esModuleInterop": true,
-    "rootDir": "src"
+    "rootDir": "src",
+    "types": ["@types/node", "@types/jest"]
   },
   "exclude": ["node_modules", "dist", "test"]
 }

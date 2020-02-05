@@ -20,8 +20,7 @@ export interface BinaryParser {
   bitsSkip(count: number): BinaryParser;
 }
 
-const binaryParser = require("../build/Release/BinaryParser");
+// tslint:disable-next-line: no-var-requires
+const binaryParser = require('../build/Release/BinaryParser');
 
-export var BinaryParser: {
-  new (): BinaryParser;
-} = binaryParser.BinaryParser;
+export const BinaryParser: new () => BinaryParser = binaryParser.BinaryParser;
