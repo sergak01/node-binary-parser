@@ -1,15 +1,16 @@
 {
   "name": "binary-parser",
   "description": "Parsing binary data by rules",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "license": "MIT",
   "gypfile": true,
   "scripts": {
-    "install": "tsc",
+    "install": "node-gyp rebuild",
+    "build": "tsc",
+    "prepublish": "tsc",
     "prepare": "tsc",
-    "build": "node-gyp rebuild",
     "clean": "node-gyp clean",
     "test": "jest"
   },
