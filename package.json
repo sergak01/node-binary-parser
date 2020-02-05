@@ -10,7 +10,6 @@
     "install": "node-gyp rebuild",
     "build": "tsc",
     "prepublish": "tsc",
-    "prepare": "tsc",
     "clean": "node-gyp clean",
     "test": "jest"
   },
