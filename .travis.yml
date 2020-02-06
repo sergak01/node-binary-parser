@@ -5,8 +5,8 @@ node_js:
   - 12
 
 env:
-  - CXX=g++
-  - CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
+  - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
+
 addons:
   apt:
     sources:
