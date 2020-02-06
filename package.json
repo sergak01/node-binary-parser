@@ -8,6 +8,7 @@
   "gypfile": true,
   "scripts": {
     "test": "jest",
+    "codecov": "codecov",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "clean": "node-gyp clean",
@@ -32,7 +33,8 @@
     "tsc": "^1.20150623.0",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.4"
+    "typescript": "^3.7.4",
+    "codecov": "^3.6.4"
   },
   "repository": {
     "type": "git",
