@@ -1,0 +1,7 @@
+{
+  "name": "BinaryParser",
+  "includeVersion": true,
+  "inputFiles": ["./src"],
+  "mode": "modules",
+  "out": "docs"
+}

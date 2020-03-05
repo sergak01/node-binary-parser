@@ -47,6 +47,8 @@ struct parseResult {
   unsigned long value;
 };
 
+typedef enum UIntLength { _8 = 8, _16 = 16, _32 = 32 } IntLength;
+
 #ifndef MAIN_H
 #define MAIN_H
 
@@ -59,9 +61,23 @@ private:
   static void ParseBits(const v8::FunctionCallbackInfo<v8::Value> &args);
   static void ParseASCII(const v8::FunctionCallbackInfo<v8::Value> &args);
   static void ParseUTF8(const v8::FunctionCallbackInfo<v8::Value> &args);
+
   static void ParseInt(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseInt8(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseInt16(const v8::FunctionCallbackInfo<v8::Value> &args);
+
+  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value> &args,
+                       IntLength length);
+
   static void ParseFloat(const v8::FunctionCallbackInfo<v8::Value> &args);
+
   static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseUInt8(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseUInt16(const v8::FunctionCallbackInfo<v8::Value> &args);
+
+  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value> &args,
+                        UIntLength length);
+
   static void BitsBack(const v8::FunctionCallbackInfo<v8::Value> &args);
   static void BitsSkip(const v8::FunctionCallbackInfo<v8::Value> &args);
   static void Parse(const v8::FunctionCallbackInfo<v8::Value> &args);

@@ -6,9 +6,17 @@
   "types": "dist/index.d.ts",
   "license": "MIT",
   "gypfile": true,
+  "homepage": "https://github.com/sergak01/node-binary-parser",
+  "engines": {
+    "node": ">= 8.0.0"
+  },
+  "bugs": {
+    "url": "https://github.com/sergak01/node-binary-parser/issues"
+  },
   "scripts": {
     "test": "jest",
     "codecov": "codecov",
+    "typedoc": "typedoc",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "clean": "node-gyp clean",
@@ -24,6 +32,7 @@
   "devDependencies": {
     "@types/jest": "^24.0.24",
     "@types/node": "^12.12.26",
+    "codecov": "^3.6.4",
     "husky": "^4.2.1",
     "jest": "^24.9.0",
     "lint-staged": "^10.0.7",
@@ -33,8 +42,8 @@
     "tsc": "^1.20150623.0",
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
-    "typescript": "^3.7.4",
-    "codecov": "^3.6.4"
+    "typedoc": "^0.16.11",
+    "typescript": "^3.7.4"
   },
   "repository": {
     "type": "git",
@@ -43,7 +52,9 @@
   "keywords": [
     "binary",
     "parser",
-    "node"
+    "node",
+    "typescript",
+    "addon"
   ],
   "husky": {
     "hooks": {
