@@ -7,9 +7,6 @@
   "license": "MIT",
   "gypfile": true,
   "homepage": "https://github.com/sergak01/node-binary-parser",
-  "engines": {
-    "node": ">= 8.0.0"
-  },
   "bugs": {
     "url": "https://github.com/sergak01/node-binary-parser/issues"
   },
@@ -43,7 +40,7 @@
     "tslint": "^6.0.0",
     "tslint-config-prettier": "^1.18.0",
     "typedoc": "^0.16.11",
-    "typescript": "^3.7.4"
+    "typescript": "^3.8.3"
   },
   "repository": {
     "type": "git",
