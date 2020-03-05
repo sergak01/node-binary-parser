@@ -22,8 +22,16 @@ void BinaryParser::Init(Local<Object> exports) {
   NODE_SET_PROTOTYPE_METHOD(tpl, "parseASCII", ParseASCII);
   // NODE_SET_PROTOTYPE_METHOD(tpl, "parseUTF8", ParseUTF8);
   NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt", ParseInt);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt8", ParseInt8);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt16", ParseInt16);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt32", ParseInt);
+
   NODE_SET_PROTOTYPE_METHOD(tpl, "parseFloat", ParseFloat);
+
   NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt", ParseUInt);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt8", ParseUInt8);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt16", ParseUInt16);
+  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt32", ParseUInt);
 
   NODE_SET_PROTOTYPE_METHOD(tpl, "bitsBack", BitsBack);
   NODE_SET_PROTOTYPE_METHOD(tpl, "bitsSkip", BitsSkip);
@@ -173,7 +181,8 @@ void BinaryParser::ParseBits(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(args.This());
 }
 
-void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args) {
+void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args,
+                            IntLength length) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
 
@@ -184,11 +193,23 @@ void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args) {
   ValueParser parser;
   parser.type = "int";
   parser.name = *name;
-  parser.bitsCount = sizeof(int) * 8;
+  parser.bitsCount = length;
 
   obj->parser_.push_back(parser);
 
   args.GetReturnValue().Set(args.This());
+}
+
+void BinaryParser::ParseInt(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseInt(args, IntLength::_32);
+}
+
+void BinaryParser::ParseInt8(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseInt(args, IntLength::_8);
+}
+
+void BinaryParser::ParseInt16(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseInt(args, IntLength::_16);
 }
 
 void BinaryParser::ParseFloat(const FunctionCallbackInfo<Value> &args) {
@@ -209,7 +230,8 @@ void BinaryParser::ParseFloat(const FunctionCallbackInfo<Value> &args) {
   args.GetReturnValue().Set(args.This());
 }
 
-void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value> &args) {
+void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value> &args,
+                             UIntLength length) {
   Isolate *isolate = args.GetIsolate();
   Local<Context> context = isolate->GetCurrentContext();
 
@@ -220,11 +242,23 @@ void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value> &args) {
   ValueParser parser;
   parser.type = "uint";
   parser.name = *name;
-  parser.bitsCount = sizeof(unsigned int) * 8;
+  parser.bitsCount = length;
 
   obj->parser_.push_back(parser);
 
   args.GetReturnValue().Set(args.This());
+}
+
+void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseUInt(args, UIntLength::_32);
+}
+
+void BinaryParser::ParseUInt8(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseUInt(args, UIntLength::_8);
+}
+
+void BinaryParser::ParseUInt16(const FunctionCallbackInfo<Value> &args) {
+  BinaryParser::ParseUInt(args, UIntLength::_16);
 }
 
 void BinaryParser::ParseASCII(const FunctionCallbackInfo<Value> &args) {
@@ -367,8 +401,27 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args) {
       std::vector<bool> b(bitset.cbegin() + from,
                           bitset.cbegin() + from + (*parser).bitsCount);
 
+      Local<Value> number;
+
       int parsed = std::accumulate(b.begin(), b.end(), 0,
                                    [](int x, int y) { return (x << 1) + y; });
+
+      switch ((*parser).bitsCount) {
+      case 8:
+        number = Number::New(isolate, (int8_t)parsed);
+
+        break;
+
+      case 16:
+        number = Number::New(isolate, (int16_t)parsed);
+
+        break;
+
+      default:
+        number = Number::New(isolate, (int32_t)parsed);
+
+        break;
+      }
 
       if (toReturn
               ->Set(context,
@@ -376,7 +429,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args) {
                         String::NewFromUtf8(isolate, (*parser).name.c_str(),
                                             NewStringType::kNormal)
                             .ToLocalChecked()),
-                    Number::New(isolate, parsed))
+                    number)
               .ToChecked()) {
       }
 
@@ -387,7 +440,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args) {
 
       int parsedInt = std::accumulate(
           b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
-      float parsed = *(float *)&parsedInt;
+      float parsed = *((float *)&parsedInt);
 
       if (toReturn
               ->Set(context,
@@ -453,7 +506,8 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value> &args) {
   }
 
   // auto stop = std::chrono::high_resolution_clock::now();
-  // auto duration = std::chrono::duration_cast<std::chrono::microseconds>(stop
+  // auto duration =
+  // std::chrono::duration_cast<std::chrono::microseconds>(stop
   // - start);
 
   // std::cout << "Time taken by function: " << duration.count() << std::endl;
