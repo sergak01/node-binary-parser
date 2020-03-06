@@ -13,7 +13,7 @@
   "scripts": {
     "test": "jest",
     "codecov": "codecov",
-    "typedoc": "typedoc",
+    "typedoc": "typedoc && git add -A docs",
     "build": "tsc",
     "format": "prettier --write \"src/**/*.ts\" \"src/**/*.js\"",
     "clean": "node-gyp clean",
@@ -22,7 +22,7 @@
     "prepare": "npm run build",
     "prepublishOnly": "npm test && npm run lint",
     "preversion": "npm run lint",
-    "version": "npm run format && git add -A src",
+    "version": "npm run format && git add -A src && npm run typedoc",
     "postversion": "git push && git push --tags"
   },
   "dependencies": {},

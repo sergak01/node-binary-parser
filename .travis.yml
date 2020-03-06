@@ -21,9 +21,14 @@ script:
   - npm test
   - npm run codecov
 
+cache:
+  npm: true
+  directories:
+    - node_modules
+
 notifications:
   email:
     recipients:
       - sergak.shpak@gmail.com
-    on_success: change
+    on_success: never
     on_failure: always

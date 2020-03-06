@@ -1,7 +1,9 @@
 {
   "name": "BinaryParser",
-  "includeVersion": true,
+  "disableOutputCheck": true,
   "inputFiles": ["./src"],
   "mode": "modules",
-  "out": "docs"
+  "out": "docs",
+  "gaID": "UA-159940931-1",
+  "gaSite": "sergak01.github.io/node-binary-parser"
 }
