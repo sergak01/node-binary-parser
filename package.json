@@ -46,6 +46,9 @@
     "type": "git",
     "url": "git+https://github.com/sergak01/node-binary-parser"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/"
+  },
   "keywords": [
     "binary",
     "parser",
