@@ -33,7 +33,7 @@ script:
 deploy:
   provider: npm
   email: "sergak.shpak@gmail.com"
-  api_token: $NPM_TOKEN
+  api_key: $NPM_TOKEN
   on:
     branch: master
     tags: true
