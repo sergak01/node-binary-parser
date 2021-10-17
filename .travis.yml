@@ -35,7 +35,7 @@ script:
 deploy:
   provider: npm
   email: "sergak.shpak@gmail.com"
-  api_token: NPM_API_TOKEN
+  api_token: $NPM_API_TOKEN
   on:
     branch: master
     tags: true
