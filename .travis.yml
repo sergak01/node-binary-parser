@@ -1,53 +1,43 @@
 language: node_js
-
 os:
-  - linux
-
+- linux
 dist: bionic
-
 jobs:
   include:
-    - node_js: 10
-    - node_js: 12
-    - node_js: 14
-    - node_js: 16
-
+  - node_js: 10
+  - node_js: 12
+  - node_js: 14
+  - node_js: 16
 env:
   global:
-    - secure: X2iHwH4vHbzIQ3UD5ugLkRkUI/GwMNeT+QrEEDm8jWk/shzGbF3I73VsfUCjq/WQqyGD3GxMQhydlFwOFpZdFkG8GUMXy7ybPNkAiSke0HnbWHl6Ly9vbJWWHAHDQNLjqcg8qyIPebvXNleb/28b4OTLoVKs3bGtJ4Fj9VNOOvVBDkpHDhB/lKWm7QJLMpzP0OVb73T6QjpmJMVZcNfV65kWix3C/kaWUwslc2sPbaKrj1MntGgyWMf/4idH39DB+p1i0TXXRcdrlFZSGJcc6ziMpZTC+/5/ZScWJJyDB+Od4VSF0jGJYAx8JWcUkhQk0AGMsE0oKssZczuqTcqW4Pm55VZdThIkYp9JqLJXJKcpRxmwWz4JoLPlW8lxSggmIabrkryHP+R56GgXk9umcXpdrb9uewSnhCMSHmIvubS+OXirO1aXRIRT6jMkiS6HxojEgQj+Sp5v+FAeIDSMwMh9hhjzKqMhlE63HkfyE9bU/YuR2u+otquBwWCjBXHyzZG7VC6tQ0ItOVy97OiffGsfcA5mHcc53KkRyOe7JnytWSsbZX6L4iNKBD2izLvjeBCUAj39ZfRyMYpN0vV0JhuwOs82w0dZL6hsuzUjLs0j49HpQaydHFXWQMDMBQQ7qcKvVrbFyEQUDO5MH4tbIlwUPh7X2f9FXob07oV0RV0=
+  - secure: MleXwyhg3xX6sxsQ4SeWaMexoqecOywc+DNYSsUJ3uWkWsGQgT/7Qbt4+mRd8uOxp9AK8PvxYELWdGwK24Mm/SDGGsmjAwXW1vk+w+0RcjThZRh93zxWJSPRRJT8CefFR1GPFjKVHqs+rT8aALO8BKKlTUmX0AuZ7uNlUh0zECXHHGTx+VwoC1nj9zj9hrlj/lsvUThQaTV+EOOPZgiMmymuWJz51DPoeKorOT41aCffcCBbQgG/mWc138WPOt51hbVTMyVYuI5OgzpJTvy3nmruZlBujrGUY9jqg9Sh+fO+KHGcQCGCDxOjF6fpI/2G/1o8IodWeM6anJUgWbOpMrspE3ArhTbRtUpzSYl8RDlB5jJEkGn7zVcvmLGSGPphvgri0Gh06Id01ngXcD0sKYU5G31bk5Y/ROlbjlStwYRopw04A/0ITXV1JMXV/bUMRd/LOw6Sr1I19i1JKtoKzB2nX160WEP8l65nNv/bZzX2i66iZby2FBObaD9TzRa+ymYPKz0mpcxu6wNzxAzq+pGmr/33kOQg4eRREisdyM/Ro+taFB/r+O2mxof2o8Hu2Pjijk+cdQYhvCSN5tjTxzdKHuaspX/Od/EvIS9avW4mx9/1jN8neSQ2E8SgJREOqNTLMaaJwxhn73b29UCzRLXGrB0DDjm5Gcnuh1K6+FQ=
   jobs:
-    - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
-
+  - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
 addons:
   apt:
     sources:
-      - ubuntu-toolchain-r-test
+    - ubuntu-toolchain-r-test
     packages:
-      - g++
-
+    - g++
 install:
-  - npm install
-
+- npm install
 script:
-  - npm test
-  - npm run codecov
-
+- npm test
+- npm run codecov
 deploy:
   provider: npm
-  email: "sergak.shpak@gmail.com"
-  api_token: $NPM_API_TOKEN
+  email: sergak.shpak@gmail.com
+  api_token: "$NPM_API_TOKEN"
   on:
     branch: master
     tags: true
-
 cache:
   npm: true
   directories:
-    - node_modules
-
+  - node_modules
 notifications:
   email:
     recipients:
-      - sergak.shpak@gmail.com
+    - sergak.shpak@gmail.com
     on_success: never
     on_failure: always
