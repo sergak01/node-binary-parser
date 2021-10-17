@@ -13,6 +13,8 @@ jobs:
     - node_js: 16
 
 env:
+  global:
+    - secure: X2iHwH4vHbzIQ3UD5ugLkRkUI/GwMNeT+QrEEDm8jWk/shzGbF3I73VsfUCjq/WQqyGD3GxMQhydlFwOFpZdFkG8GUMXy7ybPNkAiSke0HnbWHl6Ly9vbJWWHAHDQNLjqcg8qyIPebvXNleb/28b4OTLoVKs3bGtJ4Fj9VNOOvVBDkpHDhB/lKWm7QJLMpzP0OVb73T6QjpmJMVZcNfV65kWix3C/kaWUwslc2sPbaKrj1MntGgyWMf/4idH39DB+p1i0TXXRcdrlFZSGJcc6ziMpZTC+/5/ZScWJJyDB+Od4VSF0jGJYAx8JWcUkhQk0AGMsE0oKssZczuqTcqW4Pm55VZdThIkYp9JqLJXJKcpRxmwWz4JoLPlW8lxSggmIabrkryHP+R56GgXk9umcXpdrb9uewSnhCMSHmIvubS+OXirO1aXRIRT6jMkiS6HxojEgQj+Sp5v+FAeIDSMwMh9hhjzKqMhlE63HkfyE9bU/YuR2u+otquBwWCjBXHyzZG7VC6tQ0ItOVy97OiffGsfcA5mHcc53KkRyOe7JnytWSsbZX6L4iNKBD2izLvjeBCUAj39ZfRyMYpN0vV0JhuwOs82w0dZL6hsuzUjLs0j49HpQaydHFXWQMDMBQQ7qcKvVrbFyEQUDO5MH4tbIlwUPh7X2f9FXob07oV0RV0=
   jobs:
     - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
 
@@ -33,7 +35,7 @@ script:
 deploy:
   provider: npm
   email: "sergak.shpak@gmail.com"
-  api_key: $NPM_TOKEN
+  api_token: NPM_API_TOKEN
   on:
     branch: master
     tags: true
