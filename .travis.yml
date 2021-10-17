@@ -3,9 +3,12 @@ node_js:
   - 8
   - 10
   - 12
+  - 14
+  - 16
 
 env:
-  - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
+  jobs:
+    - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
 
 addons:
   apt:
@@ -20,6 +23,14 @@ install:
 script:
   - npm test
   - npm run codecov
+
+deploy:
+  provider: npm
+  email: "sergak.shpak@gmail.com"
+  api_key: $NPM_TOKEN
+  on:
+    branch: master
+    tags: true
 
 cache:
   npm: true
