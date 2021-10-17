@@ -11,7 +11,7 @@ describe('BinaryParser', () => {
         parser.parseBits('testFirst', 4).parseBits('testLast', 4);
       });
 
-      it('to equal object { testFirst: 0, testLast: 15 }', async done => {
+      it('to equal object { testFirst: 0, testLast: 15 }', async () => {
         const data = Buffer.from('0f', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -19,10 +19,10 @@ describe('BinaryParser', () => {
           testLast: 15,
         });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 15, testLast: 15 }', async done => {
+      it('to equal object { testFirst: 15, testLast: 15 }', async () => {
         const data = Buffer.from('ff', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -30,15 +30,15 @@ describe('BinaryParser', () => {
           testLast: 15,
         });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 1, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 1, testLast: 1 }', async () => {
         const data = Buffer.from('11', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ testFirst: 1, testLast: 1 });
 
-        done();
+        return;
       });
     });
 
@@ -57,7 +57,7 @@ describe('BinaryParser', () => {
           .parseBits('testLast', 4);
       });
 
-      it('to equal object { testFirst: 0, testLast: 15 }', async done => {
+      it('to equal object { testFirst: 0, testLast: 15 }', async () => {
         const data = Buffer.from('0f', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -65,10 +65,10 @@ describe('BinaryParser', () => {
           testLast: 15,
         });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 15, testLast: 15 }', async done => {
+      it('to equal object { testFirst: 15, testLast: 15 }', async () => {
         const data = Buffer.from('ff', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -76,34 +76,34 @@ describe('BinaryParser', () => {
           testLast: 15,
         });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 4, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 4, testLast: 1 }', async () => {
         const data = Buffer.from('11', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ testFirst: 4, testLast: 1 });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 4, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 4, testLast: 1 }', async () => {
         const data = Buffer.from('41', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ testFirst: 1, testLast: 1 });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 2, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 2, testLast: 1 }', async () => {
         const data = Buffer.from('81', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ testFirst: 2, testLast: 1 });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 10, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 10, testLast: 1 }', async () => {
         const data = Buffer.from('a1', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -111,10 +111,10 @@ describe('BinaryParser', () => {
           testLast: 1,
         });
 
-        done();
+        return;
       });
 
-      it('to equal object { testFirst: 14, testLast: 1 }', async done => {
+      it('to equal object { testFirst: 14, testLast: 1 }', async () => {
         const data = Buffer.from('b1', 'hex');
 
         expect(parser.parse(data)).toMatchObject({
@@ -122,7 +122,7 @@ describe('BinaryParser', () => {
           testLast: 1,
         });
 
-        done();
+        return;
       });
     });
   });
@@ -136,12 +136,12 @@ describe('BinaryParser', () => {
       parser.bitsSkip(4).parseBits('test', 2);
     });
 
-    it('to equal 2', async done => {
+    it('to equal 2', async () => {
       const data = Buffer.from('08', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 2 });
 
-      done();
+      return;
     });
   });
 
@@ -154,36 +154,36 @@ describe('BinaryParser', () => {
       parser.parseInt('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('00000001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 2147483647', async done => {
+    it('to equal 2147483647', async () => {
       const data = Buffer.from('7fffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 2147483647 });
 
-      done();
+      return;
     });
 
-    it('to equal -1', async done => {
+    it('to equal -1', async () => {
       const data = Buffer.from('ffffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -1 });
 
-      done();
+      return;
     });
 
-    it('to equal -2147483648', async done => {
+    it('to equal -2147483648', async () => {
       const data = Buffer.from('80000000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -2147483648 });
 
-      done();
+      return;
     });
   });
 
@@ -196,36 +196,36 @@ describe('BinaryParser', () => {
       parser.parseInt8('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('01', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 127', async done => {
+    it('to equal 127', async () => {
       const data = Buffer.from('7f', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 127 });
 
-      done();
+      return;
     });
 
-    it('to equal -1', async done => {
+    it('to equal -1', async () => {
       const data = Buffer.from('ff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -1 });
 
-      done();
+      return;
     });
 
-    it('to equal -128', async done => {
+    it('to equal -128', async () => {
       const data = Buffer.from('80', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -128 });
 
-      done();
+      return;
     });
   });
 
@@ -238,36 +238,36 @@ describe('BinaryParser', () => {
       parser.parseInt16('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('0001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 32767', async done => {
+    it('to equal 32767', async () => {
       const data = Buffer.from('7fff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 32767 });
 
-      done();
+      return;
     });
 
-    it('to equal -1', async done => {
+    it('to equal -1', async () => {
       const data = Buffer.from('ffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -1 });
 
-      done();
+      return;
     });
 
-    it('to equal -32768', async done => {
+    it('to equal -32768', async () => {
       const data = Buffer.from('8000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -32768 });
 
-      done();
+      return;
     });
   });
 
@@ -280,36 +280,36 @@ describe('BinaryParser', () => {
       parser.parseInt32('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('00000001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 2147483647', async done => {
+    it('to equal 2147483647', async () => {
       const data = Buffer.from('7fffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 2147483647 });
 
-      done();
+      return;
     });
 
-    it('to equal -1', async done => {
+    it('to equal -1', async () => {
       const data = Buffer.from('ffffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -1 });
 
-      done();
+      return;
     });
 
-    it('to equal -2147483648', async done => {
+    it('to equal -2147483648', async () => {
       const data = Buffer.from('80000000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -2147483648 });
 
-      done();
+      return;
     });
   });
 
@@ -322,84 +322,84 @@ describe('BinaryParser', () => {
       parser.parseFloat('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('3f800000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 4f000000', async done => {
+    it('to equal 4f000000', async () => {
       const data = Buffer.from('4f000000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 2147483648 });
 
-      done();
+      return;
     });
 
-    it('to equal 1.401298464324817e-45', async done => {
+    it('to equal 1.401298464324817e-45', async () => {
       const data = Buffer.from('00000001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1.401298464324817e-45 });
 
-      done();
+      return;
     });
 
-    it('to equal 3.4028234663852886e+38', async done => {
+    it('to equal 3.4028234663852886e+38', async () => {
       const data = Buffer.from('7f7fffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 3.4028234663852886e38 });
 
-      done();
+      return;
     });
 
-    it('to equal -3.4028234663852886e+38', async done => {
+    it('to equal -3.4028234663852886e+38', async () => {
       const data = Buffer.from('ff7fffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -3.4028234663852886e38 });
 
-      done();
+      return;
     });
 
-    it('to equal 1.1754942106924411e-38', async done => {
+    it('to equal 1.1754942106924411e-38', async () => {
       const data = Buffer.from('007fffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1.1754942106924411e-38 });
 
-      done();
+      return;
     });
 
-    it('to equal -1', async done => {
+    it('to equal -1', async () => {
       const data = Buffer.from('bf800000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: -1 });
 
-      done();
+      return;
     });
 
-    it('to equal 14.5', async done => {
+    it('to equal 14.5', async () => {
       const data = Buffer.from('41680000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 14.5 });
 
-      done();
+      return;
     });
 
-    it('to equal 934.0040283203125', async done => {
+    it('to equal 934.0040283203125', async () => {
       const data = Buffer.from('44698042', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 934.0040283203125 });
 
-      done();
+      return;
     });
 
-    it('to equal Infinity', async done => {
+    it('to equal Infinity', async () => {
       const data = Buffer.from('7f800000', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: Infinity });
 
-      done();
+      return;
     });
   });
 
@@ -412,20 +412,20 @@ describe('BinaryParser', () => {
       parser.parseUInt('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('00000001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 4294967295', async done => {
+    it('to equal 4294967295', async () => {
       const data = Buffer.from('ffffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 4294967295 });
 
-      done();
+      return;
     });
   });
 
@@ -438,20 +438,20 @@ describe('BinaryParser', () => {
       parser.parseUInt8('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('01', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 255', async done => {
+    it('to equal 255', async () => {
       const data = Buffer.from('ff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 255 });
 
-      done();
+      return;
     });
   });
 
@@ -464,20 +464,20 @@ describe('BinaryParser', () => {
       parser.parseUInt16('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('0001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 65535', async done => {
+    it('to equal 65535', async () => {
       const data = Buffer.from('ffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 65535 });
 
-      done();
+      return;
     });
   });
 
@@ -490,20 +490,20 @@ describe('BinaryParser', () => {
       parser.parseUInt32('test');
     });
 
-    it('to equal 1', async done => {
+    it('to equal 1', async () => {
       const data = Buffer.from('00000001', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 1 });
 
-      done();
+      return;
     });
 
-    it('to equal 4294967295', async done => {
+    it('to equal 4294967295', async () => {
       const data = Buffer.from('ffffffff', 'hex');
 
       expect(parser.parse(data)).toMatchObject({ test: 4294967295 });
 
-      done();
+      return;
     });
   });
 
@@ -517,44 +517,44 @@ describe('BinaryParser', () => {
         parser.parseASCII('test', 2);
       });
 
-      it('to equal empty string', async done => {
+      it('to equal empty string', async () => {
         const data = Buffer.from('0000', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ test: '' });
 
-        done();
+        return;
       });
 
-      it("to equal string 'AA'", async done => {
+      it("to equal string 'AA'", async () => {
         const data = Buffer.from('4141', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ test: 'AA' });
 
-        done();
+        return;
       });
 
-      it("to equal string 'RR'", async done => {
+      it("to equal string 'RR'", async () => {
         const data = Buffer.from('5252', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ test: 'RR' });
 
-        done();
+        return;
       });
 
-      it("to equal string '~~'", async done => {
+      it("to equal string '~~'", async () => {
         const data = Buffer.from('~~', 'utf-8');
 
         expect(parser.parse(data)).toMatchObject({ test: '~~' });
 
-        done();
+        return;
       });
 
-      it("to equal string ' ~'", async done => {
+      it("to equal string ' ~'", async () => {
         const data = Buffer.from('207e', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ test: ' ~' });
 
-        done();
+        return;
       });
     });
 
@@ -563,24 +563,24 @@ describe('BinaryParser', () => {
         parser = new BinaryParser();
       });
 
-      it("to equal string 'Test'", async done => {
+      it("to equal string 'Test'", async () => {
         parser.parseASCII('test', 4);
 
         const data = Buffer.from('54657374', 'hex');
 
         expect(parser.parse(data)).toMatchObject({ test: 'Test' });
 
-        done();
+        return;
       });
 
-      it("to equal string 'Ping-Pong'", async done => {
+      it("to equal string 'Ping-Pong'", async () => {
         parser.parseASCII('test', 9);
 
         const data = Buffer.from('Ping-Pong', 'utf-8');
 
         expect(parser.parse(data)).toMatchObject({ test: 'Ping-Pong' });
 
-        done();
+        return;
       });
     });
   });

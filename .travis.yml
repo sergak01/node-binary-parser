@@ -1,11 +1,20 @@
 language: node_js
-node_js:
-  - 8
-  - 10
-  - 12
+
+os:
+  - linux
+
+dist: bionic
+
+jobs:
+  include:
+    - node_js: 10
+    - node_js: 12
+    - node_js: 14
+    - node_js: 16
 
 env:
-  - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
+  jobs:
+    - CXX=g++ CODECOV_TOKEN="907787fc-d959-4538-9134-a95bdd5de4c1"
 
 addons:
   apt:
@@ -20,6 +29,14 @@ install:
 script:
   - npm test
   - npm run codecov
+
+deploy:
+  provider: npm
+  email: "sergak.shpak@gmail.com"
+  api_token: $NPM_TOKEN
+  on:
+    branch: master
+    tags: true
 
 cache:
   npm: true

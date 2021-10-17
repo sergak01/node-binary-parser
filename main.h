@@ -1,13 +1,15 @@
+#include <node.h>
+#include <node_buffer.h>
+#include <node_object_wrap.h>
+
 #include <algorithm>
 #include <bitset>
 #include <chrono>
 #include <iostream>
-#include <node.h>
-#include <node_buffer.h>
-#include <node_object_wrap.h>
 #include <numeric>
 #include <string>
 #include <vector>
+
 
 using v8::Array;
 using v8::ArrayBuffer;
@@ -32,7 +34,9 @@ struct BytesOrder {
   int count;
   int newPos;
 
-  bool operator<(const BytesOrder &i) { return newPos < i.newPos; }
+  bool operator<(const BytesOrder& i) {
+    return newPos < i.newPos;
+  }
 };
 
 struct ValueParser {
@@ -53,39 +57,37 @@ typedef enum UIntLength { _8 = 8, _16 = 16, _32 = 32 } IntLength;
 #define MAIN_H
 
 class BinaryParser : public node::ObjectWrap {
-private:
+ private:
   explicit BinaryParser();
   ~BinaryParser();
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseBits(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseASCII(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseUTF8(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseBits(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseASCII(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseUTF8(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseInt8(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseInt16(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseInt8(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseInt16(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value> &args,
-                       IntLength length);
+  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value>& args, IntLength length);
 
-  static void ParseFloat(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseFloat(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseUInt8(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void ParseUInt16(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseUInt8(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void ParseUInt16(const v8::FunctionCallbackInfo<v8::Value>& args);
 
-  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value> &args,
-                        UIntLength length);
+  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value>& args, UIntLength length);
 
-  static void BitsBack(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void BitsSkip(const v8::FunctionCallbackInfo<v8::Value> &args);
-  static void Parse(const v8::FunctionCallbackInfo<v8::Value> &args);
+  static void BitsBack(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void BitsSkip(const v8::FunctionCallbackInfo<v8::Value>& args);
+  static void Parse(const v8::FunctionCallbackInfo<v8::Value>& args);
   static v8::Persistent<v8::Function> constructor;
 
   std::vector<ValueParser> parser_;
 
-public:
+ public:
   static void Init(v8::Local<v8::Object> exports);
 };
 
