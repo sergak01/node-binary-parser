@@ -1,10 +1,16 @@
 language: node_js
-node_js:
-  - 8
-  - 10
-  - 12
-  - 14
-  - 16
+
+os:
+  - linux
+
+dist: bionic
+
+jobs:
+  include:
+    - node_js: 10
+    - node_js: 12
+    - node_js: 14
+    - node_js: 16
 
 env:
   jobs:
@@ -27,7 +33,7 @@ script:
 deploy:
   provider: npm
   email: "sergak.shpak@gmail.com"
-  api_key: $NPM_TOKEN
+  api_token: $NPM_TOKEN
   on:
     branch: master
     tags: true
