@@ -1,308 +1,269 @@
 #include "main.h"
 
-Persistent<Function> BinaryParser::constructor;
+namespace binaryParser {
 
-BinaryParser::BinaryParser() {}
+Napi::Object Init(Napi::Env env, Napi::Object exports) {
+  BinaryParser::Init(env, exports);
 
-BinaryParser::~BinaryParser() {}
-
-void BinaryParser::Init(Local<Object> exports) {
-  Isolate* isolate = exports->GetIsolate();
-
-  // Prepare constructor template
-  Local<FunctionTemplate> tpl = FunctionTemplate::New(isolate, New);
-  tpl->SetClassName(String::NewFromUtf8(isolate, "BinaryParser", NewStringType::kNormal).ToLocalChecked());
-  tpl->InstanceTemplate()->SetInternalFieldCount(1);
-
-  // Prototype
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parse", Parse);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseBits", ParseBits);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseASCII", ParseASCII);
-  // NODE_SET_PROTOTYPE_METHOD(tpl, "parseUTF8", ParseUTF8);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt", ParseInt);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt8", ParseInt8);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt16", ParseInt16);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseInt32", ParseInt);
-
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseFloat", ParseFloat);
-
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt", ParseUInt);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt8", ParseUInt8);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt16", ParseUInt16);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "parseUInt32", ParseUInt);
-
-  NODE_SET_PROTOTYPE_METHOD(tpl, "bitsBack", BitsBack);
-  NODE_SET_PROTOTYPE_METHOD(tpl, "bitsSkip", BitsSkip);
-
-  Local<Context> context = isolate->GetCurrentContext();
-  constructor.Reset(isolate, tpl->GetFunction(context).ToLocalChecked());
-  exports
-      ->Set(context, String::NewFromUtf8(isolate, "BinaryParser", NewStringType::kNormal).ToLocalChecked(),
-            tpl->GetFunction(context).ToLocalChecked())
-      .FromJust();
+  return exports;
 }
 
-void BinaryParser::New(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
+BinaryParser::BinaryParser(const Napi::CallbackInfo& info) : Napi::ObjectWrap<BinaryParser>(info) {}
 
-  if (args.IsConstructCall()) {
-    BinaryParser* obj = new BinaryParser();
-    obj->Wrap(args.This());
-    args.GetReturnValue().Set(args.This());
-  } else {
-    // Invoked as plain function `MyObject(...)`, turn into construct call.
-    const int argc = 1;
-    Local<Value> argv[argc] = {args[0]};
-    Local<Function> cons = Local<Function>::New(isolate, constructor);
-    Local<Object> result = cons->NewInstance(context, argc, argv).ToLocalChecked();
-    args.GetReturnValue().Set(result);
-  }
+BinaryParser::~BinaryParser() {
+  this->parser_.clear();
 }
 
-void BinaryParser::ParseBits(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
+// Initialize code in node.js
+Napi::Object BinaryParser::Init(Napi::Env env, Napi::Object exports) {
+  auto attributes = static_cast<napi_property_attributes>(napi_writable | napi_configurable);
+  // This method is used to hook the accessor and method callbacks
+  Napi::Function func = DefineClass(env, "BinaryParser",
+                                    {
+                                        StaticMethod<&BinaryParser::CreateNewItem>("CreateNewItem", attributes),
 
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+                                        InstanceMethod<&BinaryParser::ParseBits>("parseBits", attributes),
+                                        InstanceMethod<&BinaryParser::ParseASCII>("parseASCII", attributes),
 
-  String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
-  int bitsCount = args[1]->NumberValue(context).ToChecked();
-  Local<Object> options = args[2]->IsObject() ? args[2]->ToObject(context).ToLocalChecked() : Object::New(isolate);
+                                        InstanceMethod<&BinaryParser::ParseInt>("parseInt", attributes),
+                                        InstanceMethod<&BinaryParser::ParseInt8>("parseInt8", attributes),
+                                        InstanceMethod<&BinaryParser::ParseInt16>("parseInt16", attributes),
+                                        InstanceMethod<&BinaryParser::ParseInt>("parseInt32", attributes),
+
+                                        InstanceMethod<&BinaryParser::ParseFloat>("parseFloat", attributes),
+
+                                        InstanceMethod<&BinaryParser::ParseUInt>("parseUInt", attributes),
+                                        InstanceMethod<&BinaryParser::ParseUInt8>("parseUInt8", attributes),
+                                        InstanceMethod<&BinaryParser::ParseUInt16>("parseUInt16", attributes),
+                                        InstanceMethod<&BinaryParser::ParseUInt>("parseUInt32", attributes),
+
+                                        InstanceMethod<&BinaryParser::BitsBack>("bitsBack", attributes),
+                                        InstanceMethod<&BinaryParser::BitsSkip>("bitsSkip", attributes),
+
+                                        InstanceMethod<&BinaryParser::Parse>("parse", attributes),
+                                    });
+
+  auto* constructor = new Napi::FunctionReference();
+
+  // Create a persistent reference to the class constructor. This will allow
+  // a function called on a class prototype and a function
+  // called on instance of a class to be distinguished from each other.
+  *constructor = Napi::Persistent(func);
+  exports.Set("BinaryParser", func);
+
+  // Store the constructor as the add-on instance data. This will allow this
+  // add-on to support multiple instances of itself running on multiple worker
+  // threads, as well as multiple instances of itself running in different
+  // contexts on the same thread.
+  //
+  // By default, the value set on the environment here will be destroyed when
+  // the add-on is unloaded using the `delete` operator, but it is also
+  // possible to supply a custom deleter.
+  env.SetInstanceData<Napi::FunctionReference>(constructor);
+
+  return exports;
+}
+
+// Create a new item using the constructor stored during Init.
+Napi::Value BinaryParser::CreateNewItem(const Napi::CallbackInfo& info) {
+  // Retrieve the instance data we stored during `Init()`. We only stored the
+  // constructor there, so we retrieve it here to create a new instance of the
+  // JS class the constructor represents.
+  auto* constructor = info.Env().GetInstanceData<Napi::FunctionReference>();
+  return constructor->New({});
+}
+
+Napi::Value BinaryParser::ParseBits(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
+
+  auto name = info[0].As<Napi::String>().Utf8Value();
+
+  int bitsCount = info[1].As<Napi::Number>().Int32Value();
+  auto options = info[2].IsObject() ? info[2].As<Napi::Object>() : Napi::Object::New(env);
 
   ValueParser parser;
-  parser.type = "bit";
-  parser.name = *name;
+  parser.type = ParserType::BIT;
+  parser.name = name;
   parser.bitsCount = bitsCount;
 
-  if (options
-          ->HasOwnProperty(
-              context,
-              Local<Name>::Cast(String::NewFromUtf8(isolate, "reOrder", NewStringType::kNormal).ToLocalChecked()))
-          .ToChecked()) {
-    Local<Value> reOrderOption =
-        options
-            ->Get(context,
-                  Local<Name>::Cast(String::NewFromUtf8(isolate, "reOrder", NewStringType::kNormal).ToLocalChecked()))
-            .ToLocalChecked();
+  if (options.HasOwnProperty("reOrder")) {
+    auto reOrderOption = options.Get("reOrder");
 
-    if (!reOrderOption->IsArray()) {
-      isolate->ThrowException(Exception::TypeError(
-          String::NewFromUtf8(isolate, "reOrder must be an array", NewStringType::kNormal).ToLocalChecked()));
+    if (!reOrderOption.IsArray()) {
+      Napi::TypeError::New(env, "reOrder must be an array").ThrowAsJavaScriptException();
 
-      return;
+      return env.Undefined();
     }
 
-    Local<Array> reOrder = Local<Array>::Cast(reOrderOption);
+    auto reOrder = reOrderOption.As<Napi::Array>();
 
-    for (size_t reOrderIndex = 0; reOrderIndex < reOrder->Length(); reOrderIndex++) {
-      Local<Value> order = reOrder->Get(context, reOrderIndex).ToLocalChecked();
+    for (size_t reOrderIndex = 0; reOrderIndex < reOrder.Length(); reOrderIndex++) {
+      auto order = reOrder.Get(reOrderIndex);
 
-      if (order->IsObject()) {
-        Local<Object> orderObject = Local<Array>::Cast(order);
+      if (order.IsObject()) {
+        auto orderObject = order.As<Napi::Object>();
 
         BytesOrder bO;
 
-        Local<Value> startPos =
-            orderObject
-                ->Get(context, Local<Name>::Cast(
-                                   String::NewFromUtf8(isolate, "startPos", NewStringType::kNormal).ToLocalChecked()))
-                .ToLocalChecked();
-        Local<Value> count =
-            orderObject
-                ->Get(context,
-                      Local<Name>::Cast(String::NewFromUtf8(isolate, "count", NewStringType::kNormal).ToLocalChecked()))
-                .ToLocalChecked();
-        Local<Value> newPos =
-            orderObject
-                ->Get(context, Local<Name>::Cast(
-                                   String::NewFromUtf8(isolate, "newPos", NewStringType::kNormal).ToLocalChecked()))
-                .ToLocalChecked();
+        auto startPos = orderObject.Get("startPos");
+        auto count = orderObject.Get("count");
+        auto newPos = orderObject.Get("newPos");
 
-        if (!startPos->IsNumber()) {
-          isolate->ThrowException(Exception::TypeError(
-              String::NewFromUtf8(isolate, "startPos must be an number", NewStringType::kNormal).ToLocalChecked()));
+        if (!startPos.IsNumber()) {
+          Napi::TypeError::New(env, "startPos must be an number").ThrowAsJavaScriptException();
 
-          return;
-        } else if (!count->IsNumber()) {
-          isolate->ThrowException(Exception::TypeError(
-              String::NewFromUtf8(isolate, "count must be an number", NewStringType::kNormal).ToLocalChecked()));
+          return env.Undefined();
+        } else if (!count.IsNumber()) {
+          Napi::TypeError::New(env, "count must be an number").ThrowAsJavaScriptException();
 
-          return;
-        } else if (!newPos->IsNumber()) {
-          isolate->ThrowException(Exception::TypeError(
-              String::NewFromUtf8(isolate, "newPos must be an number", NewStringType::kNormal).ToLocalChecked()));
+          return env.Undefined();
+        } else if (!newPos.IsNumber()) {
+          Napi::TypeError::New(env, "newPos must be an number").ThrowAsJavaScriptException();
 
-          return;
+          return env.Undefined();
         }
 
-        bO.startPos = startPos->NumberValue(context).ToChecked();
-        bO.count = count->NumberValue(context).ToChecked();
-        bO.newPos = newPos->NumberValue(context).ToChecked();
+        bO.startPos = startPos.As<Napi::Number>().Int32Value();
+        bO.count = count.As<Napi::Number>().Int32Value();
+        bO.newPos = newPos.As<Napi::Number>().Int32Value();
 
         parser.reOrder.push_back(bO);
       } else {
-        isolate->ThrowException(Exception::TypeError(
-            String::NewFromUtf8(isolate, "reOrder item must be an object", NewStringType::kNormal).ToLocalChecked()));
+        Napi::TypeError::New(env, "reOrder item must be an object").ThrowAsJavaScriptException();
+
+        return env.Undefined();
       }
     }
   }
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::ParseInt(const FunctionCallbackInfo<Value>& args, IntLength length) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+Napi::Value BinaryParser::ParseInt(const Napi::CallbackInfo& info, IntLength length) {
+  auto name = info[0].As<Napi::String>().Utf8Value();
 
   ValueParser parser;
-  parser.type = "int";
-  parser.name = *name;
+  parser.type = ParserType::INT;
+  parser.name = name;
   parser.bitsCount = length;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::ParseInt(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseInt(args, IntLength::_32);
+Napi::Value BinaryParser::ParseInt(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseInt(info, IntLength::_32);
 }
 
-void BinaryParser::ParseInt8(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseInt(args, IntLength::_8);
+Napi::Value BinaryParser::ParseInt8(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseInt(info, IntLength::_8);
 }
 
-void BinaryParser::ParseInt16(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseInt(args, IntLength::_16);
+Napi::Value BinaryParser::ParseInt16(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseInt(info, IntLength::_16);
 }
 
-void BinaryParser::ParseFloat(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+Napi::Value BinaryParser::ParseFloat(const Napi::CallbackInfo& info) {
+  auto name = info[0].As<Napi::String>().Utf8Value();
 
   ValueParser parser;
-  parser.type = "float";
-  parser.name = *name;
+  parser.type = ParserType::FLOAT;
+  parser.name = name;
   parser.bitsCount = sizeof(float) * 8;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value>& args, UIntLength length) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
+Napi::Value BinaryParser::ParseUInt(const Napi::CallbackInfo& info, UIntLength length) {
+  auto name = info[0].As<Napi::String>().Utf8Value();
 
   ValueParser parser;
-  parser.type = "uint";
-  parser.name = *name;
+  parser.type = ParserType::UINT;
+  parser.name = name;
   parser.bitsCount = length;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::ParseUInt(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseUInt(args, UIntLength::_32);
+Napi::Value BinaryParser::ParseUInt(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseUInt(info, UIntLength::_32);
 }
 
-void BinaryParser::ParseUInt8(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseUInt(args, UIntLength::_8);
+Napi::Value BinaryParser::ParseUInt8(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseUInt(info, UIntLength::_8);
 }
 
-void BinaryParser::ParseUInt16(const FunctionCallbackInfo<Value>& args) {
-  BinaryParser::ParseUInt(args, UIntLength::_16);
+Napi::Value BinaryParser::ParseUInt16(const Napi::CallbackInfo& info) {
+  return BinaryParser::ParseUInt(info, UIntLength::_16);
 }
 
-void BinaryParser::ParseASCII(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  String::Utf8Value name(isolate, args[0]->ToString(context).ToLocalChecked());
-  int bitsCount = args[1]->NumberValue(context).ToChecked();
+Napi::Value BinaryParser::ParseASCII(const Napi::CallbackInfo& info) {
+  auto name = info[0].As<Napi::String>().Utf8Value();
+  int charCount = info[1].As<Napi::Number>().Int32Value();
 
   ValueParser parser;
-  parser.type = "ascii";
-  parser.name = *name;
-  parser.bitsCount = sizeof(unsigned char) * 8 * bitsCount;
+  parser.type = ParserType::ASCII;
+  parser.name = name;
+  parser.bitsCount = sizeof(uint8_t) * 8 * charCount;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::BitsBack(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  int bitsCount = args[0]->NumberValue(context).ToChecked();
+Napi::Value BinaryParser::BitsBack(const Napi::CallbackInfo& info) {
+  int bitsCount = info[0].As<Napi::Number>().Int32Value();
 
   ValueParser parser;
 
-  parser.type = "back";
+  parser.type = ParserType::BACK;
   parser.bitsCount = bitsCount;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::BitsSkip(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
-
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
-
-  int bitsCount = args[0]->NumberValue(context).ToChecked();
+Napi::Value BinaryParser::BitsSkip(const Napi::CallbackInfo& info) {
+  int bitsCount = info[0].As<Napi::Number>().Int32Value();
 
   ValueParser parser;
 
-  parser.type = "skip";
+  parser.type = ParserType::SKIP;
   parser.bitsCount = bitsCount;
 
-  obj->parser_.push_back(parser);
+  this->parser_.push_back(parser);
 
-  args.GetReturnValue().Set(args.This());
+  return info.This();
 }
 
-void BinaryParser::Parse(const FunctionCallbackInfo<Value>& args) {
-  Isolate* isolate = args.GetIsolate();
-  Local<Context> context = isolate->GetCurrentContext();
+Napi::Value BinaryParser::Parse(const Napi::CallbackInfo& info) {
+  auto env = info.Env();
 
-  BinaryParser* obj = ObjectWrap::Unwrap<BinaryParser>(args.Holder());
+  if (!this->parser_.size()) {
+    Napi::TypeError::New(env, "Parser is empty").ThrowAsJavaScriptException();
 
-  if (!obj->parser_.size()) {
-    isolate->ThrowException(
-        Exception::TypeError(String::NewFromUtf8(isolate, "Parser is empty", NewStringType::kNormal).ToLocalChecked()));
-
-    return;
+    return env.Undefined();
   }
 
   // auto start = std::chrono::high_resolution_clock::now();
+  if (!info[0].IsBuffer()) {
+    Napi::TypeError::New(env, "buffer must be Buffer").ThrowAsJavaScriptException();
 
-  int len = node::Buffer::Length(args[0]->ToObject(context).ToLocalChecked());
-  char* data = node::Buffer::Data(args[0]->ToObject(context).ToLocalChecked());
+    return env.Undefined();
+  }
+
+  auto buffer = info[0].As<Napi::Buffer<uint8_t>>();
+
+  int len = buffer.Length();
+  auto data = buffer.Data();
 
   std::vector<char> bytes;
   bytes.insert(bytes.cbegin(), data, data + len);
@@ -319,133 +280,121 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value>& args) {
 
   unsigned int from = 0;
 
-  Local<Object> toReturn = Object::New(isolate);
+  auto toReturn = Napi::Object::New(env);
 
-  for (auto parser = obj->parser_.cbegin(); parser != obj->parser_.cend(); parser++) {
-    std::string parserType = (*parser).type;
+  for (auto parser = this->parser_.cbegin(); parser != this->parser_.cend(); parser++) {
+    auto parserType = (*parser).type;
 
     if (bitset.size() < from + (*parser).bitsCount) {
-      isolate->ThrowException(
-          Exception::TypeError(String::NewFromUtf8(isolate, "Out of range", NewStringType::kNormal).ToLocalChecked()));
+      Napi::TypeError::New(env, "Out of range").ThrowAsJavaScriptException();
 
-      return;
+      return env.Undefined();
     }
 
-    if (parserType == "bit") {
-      std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+    switch (parserType) {
+      case ParserType::BIT: {
+        std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
 
-      if ((*parser).reOrder.size()) {
-        std::vector<bool> bCopy(b);
-        b.clear();
+        if ((*parser).reOrder.size()) {
+          std::vector<bool> bCopy(b);
+          b.clear();
 
-        std::vector<BytesOrder> bO((*parser).reOrder);
+          std::vector<BytesOrder> bO((*parser).reOrder);
 
-        std::sort(bO.begin(), bO.end());
+          std::sort(bO.begin(), bO.end());
 
-        for (auto order = bO.cbegin(); order != bO.cend(); order++) {
-          b.insert(b.cbegin() + (*order).newPos, bCopy.cbegin() + (*order).startPos,
-                   bCopy.cbegin() + (*order).startPos + (*order).count);
+          for (auto order = bO.cbegin(); order != bO.cend(); order++) {
+            b.insert(b.cbegin() + (*order).newPos, bCopy.cbegin() + (*order).startPos,
+                     bCopy.cbegin() + (*order).startPos + (*order).count);
+          }
         }
+
+        unsigned long parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+        toReturn.Set((*parser).name.c_str(), parsed);
+
+        break ;
       }
 
-      unsigned long parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+      case ParserType::INT: {
+        std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
 
-      if (toReturn
-              ->Set(context,
-                    Local<Name>::Cast(
-                        String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()),
-                    Number::New(isolate, parsed))
-              .ToChecked()) {
+        Napi::Number number;
+
+        int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+        switch ((*parser).bitsCount) {
+          case 8:
+            number = Napi::Number::New(env, (int8_t)parsed);
+
+            break;
+
+          case 16:
+            number = Napi::Number::New(env, (int16_t)parsed);
+
+            break;
+
+          default:
+            number = Napi::Number::New(env, (int32_t)parsed);
+
+            break;
+        }
+
+        toReturn.Set((*parser).name.c_str(), number);
+
+        break ;
       }
 
+      case ParserType::FLOAT: {
+        std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+        int parsedInt = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+        float parsed = *((float*)&parsedInt);
+
+        toReturn.Set((*parser).name.c_str(), parsed);
+
+        break ;
+      }
+
+      case ParserType::UINT: {
+        std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+        unsigned int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
+
+        toReturn.Set((*parser).name.c_str(), parsed);
+
+        break ;
+      }
+
+      case ParserType::ASCII: {
+        std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
+
+        std::string ascii = "";
+
+        for (auto bIter = b.cbegin(); bIter != b.cend(); bIter += 8) {
+          std::vector<bool> charBitset(bIter, bIter + 8);
+
+          ascii.push_back((unsigned char)std::accumulate(charBitset.cbegin(), charBitset.cend(), 0,
+                                                         [](int x, int y) { return (x << 1) + y; }));
+        }
+
+        toReturn.Set((*parser).name.c_str(), ascii.c_str());
+
+        break ;
+      }
+
+      case ParserType::BACK: {
+        from -= (unsigned long)(*parser).bitsCount;
+
+        break ;
+      }
+
+      default:
+        break ;
+    }
+
+    if (parserType != ParserType::BACK) {
       from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "int") {
-      std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
-
-      Local<Value> number;
-
-      int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
-
-      switch ((*parser).bitsCount) {
-        case 8:
-          number = Number::New(isolate, (int8_t)parsed);
-
-          break;
-
-        case 16:
-          number = Number::New(isolate, (int16_t)parsed);
-
-          break;
-
-        default:
-          number = Number::New(isolate, (int32_t)parsed);
-
-          break;
-      }
-
-      if (toReturn
-              ->Set(context,
-                    Local<Name>::Cast(
-                        String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()),
-                    number)
-              .ToChecked()) {
-      }
-
-      from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "float") {
-      std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
-
-      int parsedInt = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
-      float parsed = *((float*)&parsedInt);
-
-      if (toReturn
-              ->Set(context,
-                    Local<Name>::Cast(
-                        String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()),
-                    Number::New(isolate, parsed))
-              .ToChecked()) {
-      }
-
-      from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "uint") {
-      std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
-
-      unsigned int parsed = std::accumulate(b.begin(), b.end(), 0, [](int x, int y) { return (x << 1) + y; });
-
-      if (toReturn
-              ->Set(context,
-                    Local<Name>::Cast(
-                        String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()),
-                    Number::New(isolate, parsed))
-              .ToChecked()) {
-      }
-
-      from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "ascii") {
-      std::vector<bool> b(bitset.cbegin() + from, bitset.cbegin() + from + (*parser).bitsCount);
-
-      std::string ascii = "";
-
-      for (auto bIter = b.cbegin(); bIter != b.cend(); bIter += 8) {
-        std::vector<bool> charBitset(bIter, bIter + 8);
-
-        ascii.push_back((unsigned char)std::accumulate(charBitset.cbegin(), charBitset.cend(), 0,
-                                                       [](int x, int y) { return (x << 1) + y; }));
-      }
-
-      if (toReturn
-              ->Set(context,
-                    Local<Name>::Cast(
-                        String::NewFromUtf8(isolate, (*parser).name.c_str(), NewStringType::kNormal).ToLocalChecked()),
-                    String::NewFromUtf8(isolate, ascii.c_str(), NewStringType::kNormal).ToLocalChecked())
-              .ToChecked()) {
-      }
-
-      from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "skip") {
-      from += (unsigned long)(*parser).bitsCount;
-    } else if (parserType == "back") {
-      from -= (unsigned long)(*parser).bitsCount;
     }
   }
 
@@ -456,11 +405,7 @@ void BinaryParser::Parse(const FunctionCallbackInfo<Value>& args) {
 
   // std::cout << "Time taken by function: " << duration.count() << std::endl;
 
-  args.GetReturnValue().Set(toReturn);
+  return toReturn;
 }
 
-void InitAll(Local<Object> exports) {
-  BinaryParser::Init(exports);
-}
-
-NODE_MODULE(NODE_GYP_MODULE_NAME, InitAll)
+}  // namespace binaryParser
