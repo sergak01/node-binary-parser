@@ -1,6 +1,5 @@
-#include <node.h>
-#include <node_buffer.h>
-#include <node_object_wrap.h>
+#ifndef BINARY_PARSER_MAIN_H
+#define BINARY_PARSER_MAIN_H
 
 #include <algorithm>
 #include <bitset>
@@ -10,24 +9,9 @@
 #include <string>
 #include <vector>
 
+#include "napi.h"
 
-using v8::Array;
-using v8::ArrayBuffer;
-using v8::Context;
-using v8::Exception;
-using v8::Function;
-using v8::FunctionCallbackInfo;
-using v8::FunctionTemplate;
-using v8::Isolate;
-using v8::Local;
-using v8::MaybeLocal;
-using v8::Name;
-using v8::NewStringType;
-using v8::Number;
-using v8::Object;
-using v8::Persistent;
-using v8::String;
-using v8::Value;
+namespace binaryParser {
 
 struct BytesOrder {
   int startPos;
@@ -39,8 +23,10 @@ struct BytesOrder {
   }
 };
 
+enum class ParserType { BACK = 0, SKIP = 1, BIT = 10, ASCII, UTF8, INT, FLOAT, UINT };
+
 struct ValueParser {
-  std::string type;
+  ParserType type;
   std::string name;
   int bitsCount;
   std::vector<BytesOrder> reOrder;
@@ -53,42 +39,47 @@ struct parseResult {
 
 typedef enum UIntLength { _8 = 8, _16 = 16, _32 = 32 } IntLength;
 
-#ifndef MAIN_H
-#define MAIN_H
+class BinaryParser : public Napi::ObjectWrap<BinaryParser> {
+ public:
+  static Napi::Object Init(Napi::Env env, Napi::Object exports);
+  explicit BinaryParser(const Napi::CallbackInfo& info);
+  static Napi::Value CreateNewItem(const Napi::CallbackInfo& info);
 
-class BinaryParser : public node::ObjectWrap {
+  ~BinaryParser() override;
+
  private:
-  explicit BinaryParser();
-  ~BinaryParser();
+  Napi::Value ParseBits(const Napi::CallbackInfo& info);
+  Napi::Value ParseASCII(const Napi::CallbackInfo& info);
+  Napi::Value ParseUTF8(const Napi::CallbackInfo& info);
 
-  static void New(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseBits(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseASCII(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseUTF8(const v8::FunctionCallbackInfo<v8::Value>& args);
+  Napi::Value ParseInt(const Napi::CallbackInfo& info);
+  Napi::Value ParseInt8(const Napi::CallbackInfo& info);
+  Napi::Value ParseInt16(const Napi::CallbackInfo& info);
 
-  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseInt8(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseInt16(const v8::FunctionCallbackInfo<v8::Value>& args);
+  Napi::Value ParseInt(const Napi::CallbackInfo& info, IntLength length);
 
-  static void ParseInt(const v8::FunctionCallbackInfo<v8::Value>& args, IntLength length);
+  Napi::Value ParseFloat(const Napi::CallbackInfo& info);
 
-  static void ParseFloat(const v8::FunctionCallbackInfo<v8::Value>& args);
+  Napi::Value ParseUInt(const Napi::CallbackInfo& info);
+  Napi::Value ParseUInt8(const Napi::CallbackInfo& info);
+  Napi::Value ParseUInt16(const Napi::CallbackInfo& info);
 
-  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseUInt8(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void ParseUInt16(const v8::FunctionCallbackInfo<v8::Value>& args);
+  Napi::Value ParseUInt(const Napi::CallbackInfo& info, UIntLength length);
 
-  static void ParseUInt(const v8::FunctionCallbackInfo<v8::Value>& args, UIntLength length);
+  Napi::Value BitsBack(const Napi::CallbackInfo& info);
+  Napi::Value BitsSkip(const Napi::CallbackInfo& info);
 
-  static void BitsBack(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void BitsSkip(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static void Parse(const v8::FunctionCallbackInfo<v8::Value>& args);
-  static v8::Persistent<v8::Function> constructor;
+  Napi::Value Parse(const Napi::CallbackInfo& info);
 
   std::vector<ValueParser> parser_;
-
- public:
-  static void Init(v8::Local<v8::Object> exports);
 };
 
-#endif
+// Initialize native add-on
+Napi::Object Init(Napi::Env env, Napi::Object exports);
+
+// Register and initialize native add-on
+NODE_API_MODULE(NODE_GYP_MODULE_NAME, Init)
+
+}  // namespace binaryParser
+
+#endif  // BINARY_PARSER_MAIN_H

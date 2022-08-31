@@ -63,5 +63,8 @@
       "npm test",
       "git add"
     ]
+  },
+  "dependencies": {
+    "node-addon-api": "^5.0.0"
   }
 }

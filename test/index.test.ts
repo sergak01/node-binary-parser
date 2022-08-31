@@ -1,4 +1,4 @@
-import { BinaryParser } from '../src';
+import { BinaryParser } from '..';
 
 describe('BinaryParser', () => {
   describe('parseBits', () => {
